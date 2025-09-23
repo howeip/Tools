@@ -3508,8 +3508,10 @@ class topCsvGenerator():
 
         with open(filePath,newline='') as fr:
             lines = fr.readlines()
+            match_connect_str = re.compile(r'\bconnect\b')
             for row in lines:
-                if 'connect' in row and inst_name not in row:
+                #if 'connect' in row and inst_name not in row:
+                if match_connect_str.findall(row) and inst_name not in row:
                     tempList = deal_with_port_str(row)
 
                     if tempList:
