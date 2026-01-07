@@ -64,16 +64,26 @@ autocmd FileType verilog,systemverilog,verilog_systemverilog
 " 如需启用，取消下面两段注释并执行 :PluginInstall
 set rtp+=~/.vim/bundle/Vundle.vim
 call vundle#begin()
- Plugin 'VundleVim/Vundle.vim'
- Plugin 'tomasr/molokai'
- Plugin 'vim-airline/vim-airline'
- Plugin 'vim-airline/vim-airline-themes'
- Plugin 'scrooloose/nerdtree'
- Plugin 'scrooloose/nerdcommenter'
- Plugin 'majutsushi/tagbar'
- Plugin 'vhda/verilog_systemverilog.vim'
- Plugin 'ervandew/supertab'
- Plugin 'Yggdroot/indentLine'
+ "Plugin 'VundleVim/Vundle.vim'
+ "Plugin 'tomasr/molokai'
+ "Plugin 'vim-airline/vim-airline'
+ "Plugin 'vim-airline/vim-airline-themes'
+ "Plugin 'scrooloose/nerdtree'
+ "Plugin 'scrooloose/nerdcommenter'
+ "Plugin 'majutsushi/tagbar'
+ "Plugin 'vhda/verilog_systemverilog.vim'
+ "Plugin 'ervandew/supertab'
+ "Plugin 'Yggdroot/indentLine'
+ Plugin 'git@github.com:VundleVim/Vundle.vim.git'
+ Plugin 'git@github.com:tomasr/molokai.git'
+ Plugin 'git@github.com:vim-airline/vim-airline.git'
+ Plugin 'git@github.com:vim-airline/vim-airline-themes.git'
+ Plugin 'git@github.com:scrooloose/nerdtree.git'
+ Plugin 'git@github.com:scrooloose/nerdcommenter.git'
+ Plugin 'git@github.com:majutsushi/tagbar.git'
+ Plugin 'git@github.com:vhda/verilog_systemverilog.vim.git'
+ Plugin 'git@github.com:ervandew/supertab.git'
+ Plugin 'git@github.com:Yggdroot/indentLine.git'
 call vundle#end()
 filetype plugin indent on
 "以后想增删插件，只要把中间的 Plugin 'xxx' 行改一行即可，然后
