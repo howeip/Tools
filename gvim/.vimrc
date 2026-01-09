@@ -84,6 +84,7 @@ call vundle#begin()
  Plugin 'git@github.com:vhda/verilog_systemverilog.vim.git'
  Plugin 'git@github.com:ervandew/supertab.git'
  Plugin 'git@github.com:Yggdroot/indentLine.git'
+ Plugin 'git@github.com:HonkW93/automatic-verilog.git'
 call vundle#end()
 filetype plugin indent on
 "以后想增删插件，只要把中间的 Plugin 'xxx' 行改一行即可，然后
