@@ -1,0 +1,68 @@
+#=========================================================================
+# 仓库初始化与 TAG 管理
+#=========================================================================
+
+#---------- 初始化 repo 仓库 ----------
+repo_init:
+	@echo ">>> 克隆 repo 工具"
+	git clone ssh://git@git.aixin-chip.com/aixin/repo.git
+	@echo ">>> 初始化 mc8860 工程"
+	#@yes | rm -rf repo
+	bsub -Is /tools/open/git-repo/repo init \
+	      -u ssh://git@git.aixin-chip.com/aixin/repo.git \
+	      -m mc8860.xml \
+	      --repo-url /tools/open/git-repo
+	bsub -Is /tools/open/git-repo/repo sync
+	bsub -Is /tools/open/git-repo/repo start master --all
+	bsub -Is /tools/open/git-repo/repo status
+
+#---------- 分支 / 标签查询 ----------
+git_branch:
+	@git branch --show-current
+
+tag_check:
+	@git fetch --tags --force
+	@git tag --points-at HEAD
+	@git rev-parse refs/tags/$(TAG_NAME)
+	@git rev-parse HEAD
+
+#---------- 本地打 TAG 并推送 ----------
+tag_gen:
+	@echo ">>> 生成 TAG $(TAG_NAME)"
+	@git pull
+	@git tag -a $(TAG_NAME) -m "$(COMMIT_MSG)"
+	@git push --tags
+	@git tag -l $(TAG_NAME)
+	@git ls-remote --tags origin
+
+tag_log:
+	@git ls-remote --tags origin
+	@git tag -l "mc8860*"
+
+tag_del:
+	@git tag -d $(TAG_NAME)
+	@git push origin --delete $(TAG_NAME)
+	@git ls-remote --tags origin
+	@git tag -l "mc8860*"
+
+#---------- 全仓库统一切换 TAG ----------
+repo_update_tag:
+	@repo forall -c "git fetch --all"
+	@cd mc40 && git tag
+	@repo forall -c "git checkout ANY_TAG_NAME"
+
+#---------- 强制同步并加载指定 TAG ----------
+repo_load_tag:
+	@repo sync --force-sync
+	@repo forall -c "\
+		git fetch --all; \
+		git checkout mc8860_tag_rtl0.5_20251218; \
+		git pull"
+
+#---------- 生成 TAG 列表 Excel ----------
+TAG_GEN_LIST_CSV := mc8860.5rtl_tag_list.csv
+
+git_gen_xlsx_handle:
+	@chmod +x ./git_gen.sh
+	#文件为.csv文件，仅包：含库，TAG名；库数量为38
+	@bash ./get_git_tags.csh $(TAG_GEN_LIST_CSV) 38

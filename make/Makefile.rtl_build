@@ -1,0 +1,70 @@
+#=========================================================================
+#  RTL Generation & Compilation
+#=========================================================================
+
+#---------- 基本变量 ----------
+RTL_BUILD_WORK_PATH   := ~/SB_SPACE
+RTL_BUILD_OUT_PATH    := 
+RTL_BUILD_ASIC_FILE   := 
+RTL_BUILD_EMPTY_FILE  := 
+RTL_BUILD_ADD_OPTION  := 
+RTL_BUILD_VCS_OPTION  := 
+
+# VCS 编译选项
+VCS_OPTS := -full64 +systemverilogext+.sv -sverilog +v2k \
+            +error+100 +lint=all -lca -kdb -j4 -reportstats \
+            -timescale=1ns/1ps $(RTL_BUILD_ADD_OPTION)
+
+RTL_BUILD_FILELIST    := $(RTL_BUILD_WORK_PATH)/filelist.vc
+RTL_BUILD_VCS_LOG     := vcs.log
+
+#=========================================================================
+# 目标：生成文件列表
+#=========================================================================
+asic_list_gen:
+	@echo ">>> Generate ASIC file list"
+	@bsub -Is $(PROJ_DIR)/inhouse_tools/dv/gen_filelist.py \
+	      $(RTL_BUILD_ASIC_FILE) \
+	      -o $(RTL_BUILD_WORK_PATH)/filelist.vc
+
+empty_list_gen:
+	@echo ">>> Generate empty file list"
+	@bsub -Is $(PROJ_DIR)/inhouse_tools/dv/gen_filelist.py \
+	      $(RTL_BUILD_EMPTY_FILE) \
+	      -o $(RTL_BUILD_WORK_PATH)/filelist.vc
+#=========================================================================
+# 目标：创建工作目录并建立软链接
+#=========================================================================
+work_space_gen:
+	@echo ">>> Launch create work space"
+	@test -d $(RTL_BUILD_OUT_PATH)/$(PROJ_NAME) || mkdir -p $(RTL_BUILD_OUT_PATH)/$(PROJ_NAME)
+	@test -d $(RTL_BUILD_OUT_PATH)/$(PROJ_NAME)/$(RTL_BUILD_TILE_NAME) || mkdir -p $(RTL_BUILD_OUT_PATH)/$(PROJ_NAME)/$(RTL_BUILD_TILE_NAME)
+	@test -d $(RTL_BUILD_OUT_PATH)/$(PROJ_NAME)/$(RTL_BUILD_TILE_NAME)/vcs || mkdir -p $(RTL_BUILD_OUT_PATH)/$(PROJ_NAME)/$(RTL_BUILD_TILE_NAME)/vcs
+	@ln -sfn $(RTL_BUILD_OUT_PATH)/$(PROJ_NAME)/$(RTL_BUILD_TILE_NAME)
+
+#=========================================================================
+# 目标：RTL 编译
+#=========================================================================
+rtl_build: work_space_gen
+	@echo ">>> Launch VCS compile"
+	@bsub -Is $(VCS_OPTS) -f $(RTL_BUILD_FILELIST) \
+	      -top $(RTL_BUILD_TILE_NAME) \
+	      -Mdir=$(RTL_BUILD_OUT_PATH)/$(PROJ_NAME)/$(RTL_BUILD_TILE_NAME)/vcs \
+	      -l $(RTL_BUILD_OUT_PATH)/$(PROJ_NAME)/$(RTL_BUILD_TILE_NAME)/vcs/$(RTL_BUILD_VCS_LOG) \
+	      -o $(RTL_BUILD_OUT_PATH)/$(PROJ_NAME)/$(RTL_BUILD_TILE_NAME)/vcs/simv &
+
+empty_rtl_build: empty_list_gen rtl_build
+asic_rtl_build : asic_list_gen rtl_build
+
+#=========================================================================
+# 目标：清理 / 仿真 / Verdi
+#=========================================================================
+rtl_clean:
+	@bsub -Is rm -rf *~ csrc simv* verdi_config_file novas.* verdiLog
+
+rtl_sim:
+	@bsub -Is ./simv -l ./run.log
+
+verdi:
+	@bsub -Is verdi -2009 +systemverilogext+.sv +v2k -sverilog \
+	      -f $(RTL_BUILD_FILELIST) -top $(RTL_BUILD_TILE_NAME)

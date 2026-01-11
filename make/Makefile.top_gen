@@ -1,0 +1,31 @@
+TOP_GEN_EXAMPLE_FILE := /project/panweihao/MC8860/mc8860/design/rtl/top/top_gen/example_chip_top.sv
+TOP_GEN_NEW_FILE     := /project/panweihao/MC8860/mc8860/design/rtl/top/top_gen/chip_top.sv
+
+# ---------- 1. 预处理：复制+注释/解注释 ----------
+top_gen_pre_handle:
+	@cp $(TOP_GEN_EXAMPLE_FILE) $(TOP_GEN_NEW_FILE)
+	# 注释 FPGA 专用段
+	@sed -i '/ifdef FPGA_AICHIP_NO_VPUMM/,+4 s/^/\/\//'  $(TOP_GEN_NEW_FILE)
+	@sed -i '/ifdef FPGA_AICHP_DDRO_ONLY/,+4 s/^/\/\//' $(TOP_GEN_NEW_FILE)
+	# 解注释正式 tile 实例
+	@sed -i 's|//tile_vpumm u_tile_vpumm|tile_vpumm u_tile_vpumm|g'         $(TOP_GEN_NEW_FILE)
+	@sed -i 's|//tile_ddr_pwr_wrapper_ew u\([1-7]\)_tile_ddr|tile_ddr_pwr_wrapper_ew u\1_tile_ddr|g' $(TOP_GEN_NEW_FILE)
+	@sed -i 's|//tile_ddr_pwr_wrapper_ns u\([1-7]\)_tile_ddr|tile_ddr_pwr_wrapper_ns u\1_tile_ddr|g' $(TOP_GEN_NEW_FILE)
+
+# ---------- 2. gvim-server 自动实例化 ----------
+top_gen_handle: top_gen_pre_handle
+	gvim --servername HOWEI_TOP_GEN_GUI $(TOP_GEN_NEW_FILE)
+	gvim --servername HOWEI_TOP_GEN_GUI --remote-send '<Esc>:call <SNR>20_Add()<CR>'
+	gvim --servername HOWEI_TOP_GEN_GUI --remote-send '<Esc>:w<CR>'
+	# 逐 tile 自动 inst （示例：u6_tile_ddr）
+	gvim --servername HOWEI_TOP_GEN_GUI --remote-send '/u6_tile_ddr<CR>' \
+	                                    --remote-send '/autoinst<CR>'
+	gvim --servername HOWEI_TOP_GEN_GUI --remote-send '<Esc>:AIU<CR>'
+	gvim --servername HOWEI_TOP_GEN_GUI --remote-send '<Esc>:w<CR>'
+
+# ---------- 3. 补回 endif 结尾 ----------
+top_gen_after_handle:
+	@sed -i '/ifdef FPGA_AICHIP_NO_VPUMM/,+4 s/^\/\/\(.*\)/\1/'  $(TOP_GEN_NEW_FILE)
+	@sed -i '/tile_vpumm u_tile_vpumm/a `endif'                $(TOP_GEN_NEW_FILE)
+	@sed -i '/ifdef FPGA_AICHP_DDRO_ONLY/,+4 s/^\/\/\(.*\)/\1/' $(TOP_GEN_NEW_FILE)
+	@sed -i '/tile_ddr_pwr_wrapper_[nsew] u[1-7]_tile_ddr/a `endif' $(TOP_GEN_NEW_FILE)
