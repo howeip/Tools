@@ -5,6 +5,7 @@
 #-----------------------------------------------------------
 
 if ($#argv != 2) then
+    echo "Error:need one argument"
     echo "Usage: $0 <tag_csv> <expected_repo_count>"
     exit 1
 endif
@@ -18,8 +19,9 @@ alias show_banner 'echo ""; echo "**********************************************
 
 foreach line (`cat $tag_csv`)
     @ line_cnt++
-    if ("$line" == "") continue
-
+    if ("$line" == "") then
+        continue
+    endif
     # 按逗号拆成两部分：仓库路径 与 TAG 名
     set parts = ($line:as/,/ /)
     if ($#parts != 2) then
