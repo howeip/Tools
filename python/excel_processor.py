@@ -14,8 +14,9 @@ def format_chinese_date(dt):
     """跨平台兼容的中文日期格式（1月8日）"""
     year = dt.year
     month = dt.month  # 自动去掉前导0
+    month_0 = f"{dt.month:02d}"
     day = dt.day
-    return f"{month}月{day}日",f"{month}.{day}",f"{year}{month}{day}"
+    return f"{month}月{day}日",f"{month}.{day}",f"26{month_0}{day}"
 
 def copy_file_1(template_file1):
     """
